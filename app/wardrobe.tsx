@@ -11,6 +11,8 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AddItemModal from '../components/AddItemModal';
+import CameraModal from '../components/CameraModal';
 
 // Datos con favoritos
 const initialItems = [
@@ -24,6 +26,10 @@ export default function WardrobeScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [wardrobeItems, setWardrobeItems] = useState(initialItems);
+  
+  const [cameraVisible, setCameraVisible] = useState(false);
+  const [addItemVisible, setAddItemVisible] = useState(false);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null); // <- CORREGIDO AQUÍ
 
   const categories = [
     { name: 'Todos', icon: '👕' },
@@ -33,23 +39,14 @@ export default function WardrobeScreen() {
     { name: 'Dresses', icon: '👗' },
   ];
 
-  // Filtrar items
   const filteredItems = wardrobeItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'Todos' || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  // Items favoritos
   const favoriteItems = wardrobeItems.filter(item => item.isFavorite);
 
-  // Alternar favorito
-  // app/wardrobe.tsx
-// ... imports
-
-
-  // ... estados
-  
   const toggleFavorite = (itemId: string) => {
     setWardrobeItems(prevItems => 
       prevItems.map(item => 
@@ -60,41 +57,39 @@ export default function WardrobeScreen() {
     );
   };
 
-  // ... resto del código
+  const handleAddItemPress = () => {
+    setCameraVisible(true);
+  };
 
+  const handlePhotoTaken = (imageUri: string) => {
+    setCapturedImage(imageUri); // <- AHORA SÍ FUNCIONA
+    setCameraVisible(false);
+    setAddItemVisible(true);
+  };
 
-  const handleAddItem = () => {
-    Alert.alert(
-      'Agregar Prenda',
-      'Selecciona una opción:',
-      [
-        {
-          text: 'Usar Cámara',
-          onPress: () => Alert.alert('Cámara', 'Abriendo cámara...')
-        },
-        {
-          text: 'Desde Galería',
-          onPress: () => Alert.alert('Galería', 'Abriendo galería...')
-        },
-        {
-          text: 'Cancelar',
-          style: 'cancel'
-        }
-      ]
-    );
+  const handleAddItem = (newItem: any) => {
+    const itemWithImage = {
+      ...newItem,
+      image: capturedImage || 'https://via.placeholder.com/150x200/CCCCCC/FFFFFF?text=Prenda', // <- FALLBACK SI ES NULL
+      id: Date.now().toString(),
+      isFavorite: false,
+    };
+    
+    setWardrobeItems([...wardrobeItems, itemWithImage]);
+    setCapturedImage(null);
+    setAddItemVisible(false);
+    Alert.alert('¡Éxito!', 'Prenda agregada al armario');
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Mi Armario</Text>
-        <TouchableOpacity style={styles.addButton} onPress={handleAddItem}>
+        <TouchableOpacity style={styles.addButton} onPress={handleAddItemPress}>
           <Text style={styles.addButtonText}>+</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Búsqueda */}
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
@@ -105,7 +100,6 @@ export default function WardrobeScreen() {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* SECCIÓN DE FAVORITOS */}
         {favoriteItems.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>❤️ Favoritos</Text>
@@ -125,7 +119,6 @@ export default function WardrobeScreen() {
           </View>
         )}
 
-        {/* Categorías */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Categorías</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -145,7 +138,6 @@ export default function WardrobeScreen() {
           </ScrollView>
         </View>
 
-        {/* Prendas */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>
@@ -182,165 +174,164 @@ export default function WardrobeScreen() {
           )}
         </View>
 
-        {/* Espacio al final */}
         <View style={styles.bottomSpace} />
       </ScrollView>
+
+      <CameraModal
+        visible={cameraVisible}
+        onClose={() => setCameraVisible(false)}
+        onPhotoTaken={handlePhotoTaken}
+      />
+
+      <AddItemModal
+        visible={addItemVisible}
+        onClose={() => {
+          setAddItemVisible(false);
+          setCapturedImage(null);
+        }}
+        onAddItem={handleAddItem}
+        capturedImage={capturedImage}
+      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: '#fff' 
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
   },
-  header: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
   },
-  title: { 
-    fontSize: 26,
-    fontWeight: 'bold' 
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
   },
-  addButton: { 
-    backgroundColor: '#000', 
+  addButton: {
     width: 40,
     height: 40,
-    borderRadius: 20, 
-    justifyContent: 'center', 
-    alignItems: 'center' 
-  },
-  addButtonText: { 
-    color: '#fff', 
-    fontSize: 20,
-    fontWeight: 'bold' 
-  },
-  searchContainer: { 
-    paddingHorizontal: 20, 
-    marginBottom: 16,
-  },
-  searchInput: { 
-    backgroundColor: '#f8f8f8', 
-    paddingHorizontal: 16, 
-    paddingVertical: 12, 
-    borderRadius: 10, 
-    fontSize: 16, 
-  },
-  content: { 
-    flex: 1 
-  },
-  section: { 
-    marginBottom: 28,
-    paddingHorizontal: 20,
-  },
-  sectionHeader: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    marginBottom: 16,
-  },
-  sectionTitle: { 
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  itemsCount: { 
-    fontSize: 14,
-    color: '#666' 
-  },
-  // Favoritos
-  favoriteCard: {
-    marginRight: 16,
-    position: 'relative',
-  },
-  favoriteImage: {
-    width: 110,
-    height: 140,
-    borderRadius: 10,
-  },
-  // Categorías
-  categoryCard: {
-    backgroundColor: '#f8f8f8',
-    padding: 14,
-    borderRadius: 12,
+    borderRadius: 20,
+    backgroundColor: '#4A90E2',
     alignItems: 'center',
-    marginRight: 12,
-    minWidth: 80,
+    justifyContent: 'center',
   },
-  categoryCardSelected: {
-    backgroundColor: '#000',
+  addButtonText: {
+    color: '#FFFFFF',
+    fontSize: 24,
+    lineHeight: 24,
   },
-  categoryIcon: {
-    fontSize: 22,
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+  },
+  searchInput: {
+    backgroundColor: '#F0F0F0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  content: {
+    paddingHorizontal: 16,
+  },
+  section: {
+    marginTop: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
     marginBottom: 8,
   },
-  categoryName: {
-    fontSize: 13,
-    fontWeight: 'bold',
-  },
-  // Grid de items
-  itemsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  itemCard: {
-    width: '48%',
-    backgroundColor: '#f8f8f8',
-    borderRadius: 12,
+  favoriteCard: {
+    width: 120,
+    height: 160,
+    marginRight: 12,
+    borderRadius: 8,
     overflow: 'hidden',
-    position: 'relative',
+    backgroundColor: '#EEEEEE',
   },
-  itemImage: {
+  favoriteImage: {
     width: '100%',
-    height: 150,
+    height: '100%',
   },
   heartButton: {
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    borderRadius: 14,
-    width: 28,
-    height: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    borderRadius: 16,
+    padding: 4,
   },
   heartText: {
-    fontSize: 14,
+    fontSize: 16,
   },
-  itemInfo: {
-    padding: 12,
-  },
-  itemName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  itemCategory: {
-    fontSize: 12,
-    color: '#666',
-  },
-  // Estados vacíos
-  emptyState: {
-    padding: 40,
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  itemsCount: {
+    color: '#888888',
+  },
+  emptyState: {
+    alignItems: 'center',
+    padding: 20,
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 8,
+    color: '#666666',
+    marginBottom: 4,
   },
   emptySubtext: {
-    fontSize: 14,
-    color: '#999',
-    textAlign: 'center',
+    color: '#999999',
+  },
+  itemsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  itemCard: {
+    width: '48%',
+    marginBottom: 16,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#FAFAFA',
+  },
+  itemImage: {
+    width: '100%',
+    height: 180,
+  },
+  itemInfo: {
+    padding: 8,
+  },
+  itemName: {
+    fontWeight: '600',
+  },
+  itemCategory: {
+    color: '#777777',
+    fontSize: 12,
+  },
+  categoryCard: {
+    padding: 8,
+    alignItems: 'center',
+    marginRight: 12,
+    borderRadius: 8,
+    backgroundColor: '#F5F5F5',
+  },
+  categoryCardSelected: {
+    backgroundColor: '#4A90E2',
+  },
+  categoryIcon: {
+    fontSize: 20,
+  },
+  categoryName: {
+    marginTop: 4,
+    fontSize: 12,
   },
   bottomSpace: {
-    height: 30,
+    height: 80,
   },
 });
