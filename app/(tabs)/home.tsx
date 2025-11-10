@@ -2,28 +2,20 @@
 import { router } from 'expo-router';
 import React from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
-  // Datos del usuario
-  const userData = {
-    name: 'Ana García'
-  };
+  const userData = { name: 'Ana García' };
 
-  // Obtener iniciales del nombre
   const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+    return name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
+    <SafeAreaView style={styles.container}>
+      {/* Header COMPACTO pero con todas las funciones */}
       <View style={styles.header}>
-        <View>
+        <View style={styles.headerLeft}>
           <Text style={styles.greeting}>¡Hola, {userData.name}! 👋</Text>
           <Text style={styles.subtitle}>¿Qué outfit llevarás hoy?</Text>
         </View>
@@ -81,7 +73,7 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
 
-        {/* Navegación rápida */}
+        {/* Navegación rápida - TODAS las opciones */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Acciones rápidas</Text>
           <View style={styles.quickNav}>
@@ -143,7 +135,7 @@ export default function HomeScreen() {
         {/* Espacio al final */}
         <View style={styles.bottomSpace} />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -155,76 +147,76 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 60, // Mantenemos este padding para dispositivos normales
-    paddingBottom: 20,
+    alignItems: 'flex-start',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    minHeight: 80,
+  },
+  headerLeft: {
+    flex: 1,
+    marginRight: 10,
   },
   greeting: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
+    marginBottom: 2,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#666',
-    marginTop: 4,
   },
   avatarContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#007AFF',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+    marginTop: 4,
   },
   avatarText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   content: {
     flex: 1,
   },
   section: {
-    marginBottom: 30,
-    paddingHorizontal: 20,
+    marginBottom: 25,
+    paddingHorizontal: 16,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 15,
+    marginBottom: 12,
   },
   outfitCard: {
     backgroundColor: '#f8f8f8',
-    borderRadius: 15,
+    borderRadius: 12,
     overflow: 'hidden',
   },
   outfitImage: {
     width: '100%',
-    height: 300,
+    height: 250,
   },
   outfitInfo: {
-    padding: 15,
+    padding: 12,
   },
   outfitName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 5,
+    marginBottom: 4,
   },
   outfitItems: {
     fontSize: 14,
     color: '#666',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   weatherInfo: {
     backgroundColor: '#E3F2FD',
-    padding: 8,
-    borderRadius: 8,
+    padding: 6,
+    borderRadius: 6,
     alignSelf: 'flex-start',
   },
   weatherText: {
@@ -233,81 +225,81 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   suggestedOutfit: {
-    marginRight: 15,
+    marginRight: 12,
     alignItems: 'center',
   },
   suggestedImage: {
-    width: 150,
-    height: 200,
-    borderRadius: 12,
-    marginBottom: 8,
+    width: 140,
+    height: 180,
+    borderRadius: 10,
+    marginBottom: 6,
   },
   suggestedText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '500',
     textAlign: 'center',
   },
   quickNav: {
     flexDirection: 'row',
-    gap: 15,
-    marginBottom: 15,
+    gap: 12,
+    marginBottom: 12,
   },
   navCard: {
     flex: 1,
     backgroundColor: '#f8f8f8',
-    padding: 20,
-    borderRadius: 12,
+    padding: 16,
+    borderRadius: 10,
     alignItems: 'center',
   },
   navIcon: {
-    fontSize: 24,
-    marginBottom: 8,
+    fontSize: 20,
+    marginBottom: 6,
   },
   navTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: 2,
     textAlign: 'center',
   },
   navDesc: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#666',
     textAlign: 'center',
   },
   reminderCard: {
     flexDirection: 'row',
     backgroundColor: '#FFF3CD',
-    padding: 15,
-    borderRadius: 12,
+    padding: 12,
+    borderRadius: 10,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#FFEAA7',
   },
   reminderIcon: {
-    fontSize: 24,
-    marginRight: 12,
+    fontSize: 20,
+    marginRight: 10,
   },
   reminderInfo: {
     flex: 1,
   },
   reminderTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     marginBottom: 2,
   },
   reminderDesc: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#666',
   },
   reminderButton: {
     backgroundColor: '#000',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
   },
   reminderButtonText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 'bold',
   },
   bottomSpace: {

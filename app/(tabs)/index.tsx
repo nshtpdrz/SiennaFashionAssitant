@@ -12,8 +12,9 @@ export default function Onboarding() {
           source={{ uri: 'https://via.placeholder.com/200x200' }}
           style={styles.logo}
         />
-        <Text style={styles.title}>Fashion Assistant</Text>
+        <Text style={styles.title}>Sienna Fashion Assistant</Text>
         <Text style={styles.subtitle}>Tu armario virtual inteligente</Text>
+        <Text style={styles.subtitle}> </Text>
       </View>
 
       {/* Botones de acción */}

@@ -1,7 +1,7 @@
 // components/CameraModal.js
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -18,13 +18,6 @@ export default function CameraModal({ visible, onClose, onPhotoTaken }) {
   const [loading, setLoading] = useState(false);
   const cameraRef = useRef(null);
 
-  // Solicitar permisos al abrir el modal
-  useEffect(() => {
-    if (visible) {
-      requestPermission();
-    }
-  }, [visible]);
-
   if (!permission) {
     return (
       <Modal visible={visible} animationType="slide">
@@ -39,7 +32,7 @@ export default function CameraModal({ visible, onClose, onPhotoTaken }) {
   if (!permission.granted) {
     return (
       <Modal visible={visible} animationType="slide">
-        <View style={styles.container}>
+        <View style={styles.permissionContainer}>
           <Text style={styles.permissionTitle}>Permiso de Cámara</Text>
           <Text style={styles.permissionText}>
             Necesitamos acceso a tu cámara para tomar fotos de tus prendas
@@ -61,13 +54,12 @@ export default function CameraModal({ visible, onClose, onPhotoTaken }) {
       try {
         const photo = await cameraRef.current.takePictureAsync({
           quality: 0.8,
-          exif: true
         });
         
         onPhotoTaken(photo.uri);
         onClose();
       } catch (error) {
-        Alert.alert('Error', 'No se pudo tomar la foto: ' + error.message);
+        Alert.alert('Error', 'No se pudo tomar la foto');
       } finally {
         setLoading(false);
       }
@@ -96,12 +88,12 @@ export default function CameraModal({ visible, onClose, onPhotoTaken }) {
   };
 
   return (
-    <Modal visible={visible} animationType="slide" statusBarTranslucent>
+    <Modal visible={visible} animationType="slide">
       <View style={styles.container}>
         {loading && (
           <View style={styles.loadingOverlay}>
             <ActivityIndicator size="large" color="#fff" />
-            <Text style={styles.loadingOverlayText}>Procesando imagen...</Text>
+            <Text style={styles.loadingText}>Procesando...</Text>
           </View>
         )}
         
@@ -109,17 +101,8 @@ export default function CameraModal({ visible, onClose, onPhotoTaken }) {
           ref={cameraRef}
           style={styles.camera}
           facing={facing}
-          mode="picture"
         >
           <View style={styles.overlay}>
-            {/* Guía para tomar fotos de prendas */}
-            <View style={styles.guideFrame}>
-              <View style={styles.guideTextContainer}>
-                <Text style={styles.guideText}>Encuadra tu prenda aquí</Text>
-              </View>
-            </View>
-
-            {/* Controles superiores */}
             <View style={styles.topControls}>
               <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
                 <Text style={styles.closeBtnText}>✕</Text>
@@ -133,7 +116,10 @@ export default function CameraModal({ visible, onClose, onPhotoTaken }) {
               </TouchableOpacity>
             </View>
 
-            {/* Controles inferiores */}
+            <View style={styles.guideContainer}>
+              <Text style={styles.guideText}>📷 Encuadra tu prenda</Text>
+            </View>
+
             <View style={styles.bottomControls}>
               <TouchableOpacity style={styles.galleryBtn} onPress={pickFromGallery}>
                 <Text style={styles.galleryBtnText}>📁 Galería</Text>
@@ -144,7 +130,7 @@ export default function CameraModal({ visible, onClose, onPhotoTaken }) {
                 onPress={takePicture}
                 disabled={loading}
               >
-                <View style={styles.captureBtnInner} />
+                <View style={styles.captureInner} />
               </TouchableOpacity>
               
               <View style={styles.placeholder} />
@@ -169,24 +155,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     justifyContent: 'space-between',
   },
-  // Guía de encuadre
-  guideFrame: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  guideTextContainer: {
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-  guideText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  // Controles superiores
   topControls: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -218,7 +186,18 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
-  // Controles inferiores
+  guideContainer: {
+    alignItems: 'center',
+  },
+  guideText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
   bottomControls: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -239,24 +218,23 @@ const styles = StyleSheet.create({
   },
   captureBtn: {
     backgroundColor: 'rgba(255,255,255,0.3)',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 4,
+    borderWidth: 3,
     borderColor: '#fff',
   },
-  captureBtnInner: {
+  captureInner: {
     backgroundColor: '#fff',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
   placeholder: {
-    width: 80,
+    width: 70,
   },
-  // Estados de carga y permisos
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.8)',
@@ -264,22 +242,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1000,
   },
-  loadingOverlayText: {
+  loadingText: {
     color: '#fff',
     marginTop: 10,
     fontSize: 16,
   },
-  loadingText: {
-    marginTop: 20,
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
+  permissionContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
   },
   permissionTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
-    textAlign: 'center',
   },
   permissionText: {
     fontSize: 16,
@@ -299,15 +277,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-    textAlign: 'center',
   },
   closeButton: {
     paddingVertical: 15,
-    paddingHorizontal: 30,
   },
   closeButtonText: {
     color: '#666',
     fontSize: 16,
-    textAlign: 'center',
   },
 });
