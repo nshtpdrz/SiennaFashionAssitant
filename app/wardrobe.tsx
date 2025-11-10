@@ -12,11 +12,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// Datos iniciales
+// Datos con favoritos
 const initialItems = [
   { id: '1', name: 'Camiseta Blanca', category: 'Tops', image: 'https://via.placeholder.com/150x200/4A90E2/FFFFFF?text=Camiseta', isFavorite: true },
   { id: '2', name: 'Jeans Azul', category: 'Bottoms', image: 'https://via.placeholder.com/150x200/357ABD/FFFFFF?text=Jeans', isFavorite: false },
   { id: '3', name: 'Zapatillas', category: 'Shoes', image: 'https://via.placeholder.com/150x200/2C3E50/FFFFFF?text=Zapatillas', isFavorite: true },
+  { id: '4', name: 'Vestido Negro', category: 'Dresses', image: 'https://via.placeholder.com/150x200/8E44AD/FFFFFF?text=Vestido', isFavorite: false },
 ];
 
 export default function WardrobeScreen() {
@@ -25,10 +26,11 @@ export default function WardrobeScreen() {
   const [wardrobeItems, setWardrobeItems] = useState(initialItems);
 
   const categories = [
-    { name: 'Todos', icon: '👕', count: wardrobeItems.length },
-    { name: 'Tops', icon: '👕', count: wardrobeItems.filter(item => item.category === 'Tops').length },
-    { name: 'Bottoms', icon: '👖', count: wardrobeItems.filter(item => item.category === 'Bottoms').length },
-    { name: 'Shoes', icon: '👟', count: wardrobeItems.filter(item => item.category === 'Shoes').length },
+    { name: 'Todos', icon: '👕' },
+    { name: 'Tops', icon: '👕' },
+    { name: 'Bottoms', icon: '👖' },
+    { name: 'Shoes', icon: '👟' },
+    { name: 'Dresses', icon: '👗' },
   ];
 
   // Filtrar items
@@ -42,19 +44,44 @@ export default function WardrobeScreen() {
   const favoriteItems = wardrobeItems.filter(item => item.isFavorite);
 
   // Alternar favorito
-  const toggleFavorite = (itemId: string) => {
-  setWardrobeItems(prevItems => 
-    prevItems.map(item => 
-      item.id === itemId 
-        ? { ...item, isFavorite: !item.isFavorite } 
-        : item
-    )
-  );
-};
+  // app/wardrobe.tsx
+// ... imports
 
-  // Manejar agregar prenda
-  const handleAddItemPress = () => {
-    Alert.alert('Agregar Prenda', 'Funcionalidad de cámara próximamente');
+
+  // ... estados
+  
+  const toggleFavorite = (itemId: string) => {
+    setWardrobeItems(prevItems => 
+      prevItems.map(item => 
+        item.id === itemId 
+          ? { ...item, isFavorite: !item.isFavorite } 
+          : item
+      )
+    );
+  };
+
+  // ... resto del código
+
+
+  const handleAddItem = () => {
+    Alert.alert(
+      'Agregar Prenda',
+      'Selecciona una opción:',
+      [
+        {
+          text: 'Usar Cámara',
+          onPress: () => Alert.alert('Cámara', 'Abriendo cámara...')
+        },
+        {
+          text: 'Desde Galería',
+          onPress: () => Alert.alert('Galería', 'Abriendo galería...')
+        },
+        {
+          text: 'Cancelar',
+          style: 'cancel'
+        }
+      ]
+    );
   };
 
   return (
@@ -62,7 +89,7 @@ export default function WardrobeScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Mi Armario</Text>
-        <TouchableOpacity style={styles.addButton} onPress={handleAddItemPress}>
+        <TouchableOpacity style={styles.addButton} onPress={handleAddItem}>
           <Text style={styles.addButtonText}>+</Text>
         </TouchableOpacity>
       </View>
@@ -78,49 +105,44 @@ export default function WardrobeScreen() {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Favoritos */}
+        {/* SECCIÓN DE FAVORITOS */}
         {favoriteItems.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>❤️ Favoritos</Text>
-            <View style={styles.favoritesContainer}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {favoriteItems.map((item) => (
-                  <View key={item.id} style={styles.favoriteCard}>
-                    <Image source={{ uri: item.image }} style={styles.favoriteImage} />
-                    <TouchableOpacity 
-                      style={styles.heartButton}
-                      onPress={() => toggleFavorite(item.id)}
-                    >
-                      <Text style={styles.heartText}>❤️</Text>
-                    </TouchableOpacity>
-                  </View>
-                ))}
-              </ScrollView>
-            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {favoriteItems.map((item) => (
+                <View key={item.id} style={styles.favoriteCard}>
+                  <Image source={{ uri: item.image }} style={styles.favoriteImage} />
+                  <TouchableOpacity 
+                    style={styles.heartButton}
+                    onPress={() => toggleFavorite(item.id)}
+                  >
+                    <Text style={styles.heartText}>❤️</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </ScrollView>
           </View>
         )}
 
         {/* Categorías */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Categorías</Text>
-          <View style={styles.categoriesContainer}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {categories.map((category, index) => (
-                <TouchableOpacity 
-                  key={index}
-                  style={[
-                    styles.categoryCard,
-                    selectedCategory === category.name && styles.categoryCardSelected
-                  ]}
-                  onPress={() => setSelectedCategory(category.name)}
-                >
-                  <Text style={styles.categoryIcon}>{category.icon}</Text>
-                  <Text style={styles.categoryName}>{category.name}</Text>
-                  <Text style={styles.categoryCount}>{category.count}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {categories.map((category, index) => (
+              <TouchableOpacity 
+                key={index}
+                style={[
+                  styles.categoryCard,
+                  selectedCategory === category.name && styles.categoryCardSelected
+                ]}
+                onPress={() => setSelectedCategory(category.name)}
+              >
+                <Text style={styles.categoryIcon}>{category.icon}</Text>
+                <Text style={styles.categoryName}>{category.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
 
         {/* Prendas */}
@@ -199,7 +221,6 @@ const styles = StyleSheet.create({
   searchContainer: { 
     paddingHorizontal: 20, 
     marginBottom: 16,
-    marginTop: 8,
   },
   searchInput: { 
     backgroundColor: '#f8f8f8', 
@@ -224,26 +245,23 @@ const styles = StyleSheet.create({
   sectionTitle: { 
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   itemsCount: { 
     fontSize: 14,
     color: '#666' 
   },
-  favoritesContainer: {
-    marginTop: 8,
-  },
-  categoriesContainer: {
-    marginTop: 8,
-  },
+  // Favoritos
   favoriteCard: {
     marginRight: 16,
+    position: 'relative',
   },
   favoriteImage: {
     width: 110,
     height: 140,
     borderRadius: 10,
   },
+  // Categorías
   categoryCard: {
     backgroundColor: '#f8f8f8',
     padding: 14,
@@ -262,12 +280,8 @@ const styles = StyleSheet.create({
   categoryName: {
     fontSize: 13,
     fontWeight: 'bold',
-    marginBottom: 4,
   },
-  categoryCount: {
-    fontSize: 11,
-    color: '#666',
-  },
+  // Grid de items
   itemsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -278,7 +292,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f8f8',
     borderRadius: 12,
     overflow: 'hidden',
-    marginBottom: 12,
+    position: 'relative',
   },
   itemImage: {
     width: '100%',
@@ -310,6 +324,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
   },
+  // Estados vacíos
   emptyState: {
     padding: 40,
     alignItems: 'center',
