@@ -39,12 +39,21 @@ export default function ProfileScreen() {
     return name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  const handleLogout = () => {
-    Alert.alert('Cerrar Sesión', '¿Estás seguro?', [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Cerrar Sesión', style: 'destructive', onPress: () => logout() }
-    ]);
-  };
+// app/profile.tsx
+const handleLogout = () => {
+  console.log('🟡 Botón de logout presionado');
+  Alert.alert('Cerrar Sesión', '¿Estás seguro?', [
+    { text: 'Cancelar', style: 'cancel', onPress: () => console.log('🟡 Logout cancelado') },
+    { 
+      text: 'Cerrar Sesión', 
+      style: 'destructive', 
+      onPress: () => {
+        console.log('🟡 Confirmación de logout aceptada');
+        logout();
+      }
+    }
+  ]);
+};
 
   return (
     <SafeAreaView style={styles.container}>

@@ -1,4 +1,5 @@
 // contexts/AuthContext.tsx
+import { router } from 'expo-router';
 import {
     User,
     createUserWithEmailAndPassword,
@@ -36,27 +37,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const userDoc = await getDoc(doc(db, 'users', user.uid));
           if (userDoc.exists()) {
+            console.log('User data loaded from Firestore');
             setUserData(userDoc.data());
           } else {
-            setUserData({
+            console.log('Creating new user document in Firestore');
+            // Crear documento de usuario si no existe
+            const userDataToSave = {
               name: user.email?.split('@')[0] || 'Usuario',
               email: user.email,
+              createdAt: new Date(),
               bio: '',
               age: '',
-              style: 'Casual'
-            });
+              style: 'Casual',
+              preferences: {
+                colors: [],
+                brands: [],
+                sizes: []
+              }
+            };
+            
+            await setDoc(doc(db, 'users', user.uid), userDataToSave);
+            setUserData(userDataToSave);
           }
         } catch (error) {
-          console.error('Error loading user data:', error);
-          setUserData({
+          console.error('Error loading/creating user data:', error);
+          // Fallback sin datos de Firestore
+          const fallbackData = {
             name: user.email?.split('@')[0] || 'Usuario',
             email: user.email,
             bio: '',
             age: '',
             style: 'Casual'
-          });
+          };
+          setUserData(fallbackData);
         }
       } else {
+        console.log('No user, clearing user data');
         setUserData(null);
       }
       
@@ -67,9 +83,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string, name: string) => {
+    console.log('Signing up user:', email);
     const result = await createUserWithEmailAndPassword(auth, email, password);
     
-    await setDoc(doc(db, 'users', result.user.uid), {
+    const userDataToSave = {
       name,
       email,
       createdAt: new Date(),
@@ -81,51 +98,84 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         brands: [],
         sizes: []
       }
-    });
+    };
+    
+    await setDoc(doc(db, 'users', result.user.uid), userDataToSave);
     
     setUser(result.user);
-    setUserData({
-      name,
-      email,
-      bio: '',
-      age: '',
-      style: 'Casual'
-    });
+    setUserData(userDataToSave);
+    console.log('User signed up successfully');
   };
 
   const signIn = async (email: string, password: string) => {
+    console.log('Signing in user:', email);
     const result = await signInWithEmailAndPassword(auth, email, password);
     setUser(result.user);
     
     try {
       const userDoc = await getDoc(doc(db, 'users', result.user.uid));
       if (userDoc.exists()) {
+        console.log('User data loaded during sign in');
         setUserData(userDoc.data());
       } else {
-        setUserData({
+        console.log('No user document found during sign in, creating one');
+        const fallbackData = {
           name: result.user.email?.split('@')[0] || 'Usuario',
           email: result.user.email,
           bio: '',
           age: '',
           style: 'Casual'
-        });
+        };
+        setUserData(fallbackData);
       }
     } catch (error) {
-      console.error('Error loading user data:', error);
+      console.error('Error loading user data during sign in:', error);
+      const fallbackData = {
+        name: result.user.email?.split('@')[0] || 'Usuario',
+        email: result.user.email,
+        bio: '',
+        age: '',
+        style: 'Casual'
+      };
+      setUserData(fallbackData);
     }
+    
+    console.log('User signed in successfully');
   };
 
   const logout = async () => {
-    await signOut(auth);
-    setUser(null);
-    setUserData(null);
+    try {
+      console.log('🔴 Iniciando proceso de logout...');
+      await signOut(auth);
+      console.log('🔴 Firebase signOut completado');
+      
+      setUser(null);
+      setUserData(null);
+      console.log('🔴 Estado local limpiado');
+      
+      // Redirigir a la pantalla inicial después de cerrar sesión
+      router.replace('/');
+      console.log('🔴 Redirección a / completada');
+    } catch (error) {
+      console.error('❌ Error al cerrar sesión:', error);
+    }
   };
 
   const updateUserData = async (data: any) => {
-    if (!user) return;
+    if (!user) {
+      console.error('No user to update data');
+      return;
+    }
     
-    await setDoc(doc(db, 'users', user.uid), data, { merge: true });
-    setUserData(data);
+    try {
+      console.log('Updating user data for:', user.uid);
+      await setDoc(doc(db, 'users', user.uid), data, { merge: true });
+      setUserData(data);
+      console.log('User data updated successfully');
+    } catch (error) {
+      console.error('Error updating user data:', error);
+      throw error;
+    }
   };
 
   const value = {

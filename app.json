@@ -1,5 +1,6 @@
 {
   "expo": {
+    "scheme": "siennafashion",
     "name": "Sienna Fashion Assistant",
     "slug": "sienna-fashion-assistant",
     "version": "1.0.0",

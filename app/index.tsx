@@ -55,6 +55,7 @@ export default function Onboarding() {
   );
 }
 
+// AÑADE ESTA PARTE QUE FALTABA:
 const styles = StyleSheet.create({
   container: {
     flex: 1,
