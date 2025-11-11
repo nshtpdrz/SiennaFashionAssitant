@@ -1,11 +1,9 @@
 // app/profile.tsx
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../contexts/AuthContext';
-import { outfitsService } from '../../services/outfitsService';
-import { wardrobeService } from '../../services/wardrobeService';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function ProfileScreen() {
   const { user, userData, logout } = useAuth();
@@ -15,25 +13,31 @@ export default function ProfileScreen() {
     { number: '0', label: 'Favoritos' } 
   ]);
 
-  useEffect(() => {
+  /* useEffect(() => {
     loadStats();
   }, []);
 
-  const loadStats = async () => {
-    try {
-      const clothingItems = await wardrobeService.getClothingItems();
-      const outfits = await outfitsService.getOutfits();
-      const favorites = clothingItems.filter(item => item.isFavorite);
+ const loadStats = async () => {
+  try {
+    const clothingItems = await wardrobeService.getClothingItems();
+    // const outfits = await outfitsService.getOutfits(); // COMENTA TEMPORALMENTE
+    const favorites = clothingItems.filter(item => item.isFavorite);
 
-      setStats([
-        { number: clothingItems.length.toString(), label: 'Prendas' },
-        { number: outfits.length.toString(), label: 'Outfits' },
-        { number: favorites.length.toString(), label: 'Favoritos' }
-      ]);
-    } catch (error) {
-      console.error('Error loading stats:', error);
-    }
-  };
+    setStats([
+      { number: clothingItems.length.toString(), label: 'Prendas' },
+      { number: '0', label: 'Outfits' }, // TEMPORAL: outfits.length.toString()
+      { number: favorites.length.toString(), label: 'Favoritos' }
+    ]);
+  } catch (error) {
+    console.error('Error loading stats:', error);
+    // Fallback
+    setStats([
+      { number: '0', label: 'Prendas' },
+      { number: '0', label: 'Outfits' },
+      { number: '0', label: 'Favoritos' }
+    ]);
+  }
+};*/
 
   const getInitials = (name: string) => {
     return name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
