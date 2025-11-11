@@ -1,5 +1,4 @@
 // hooks/useAuth.js
-import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { isEmulator } from '../lib/firebase';
 
@@ -47,17 +46,10 @@ export function useAuth() {
     return { success: true };
   };
 
-const logout = async () => {
-  try {
-    await signOut(auth);
+  const logout = () => {
     setUser(null);
-    setUserData(null);
-    
-    router.replace('/');
-  } catch (error) {
-    console.error('Error al cerrar sesión:', error);
-  }
-};
+  };
+
   return { 
     user, 
     loading, 
