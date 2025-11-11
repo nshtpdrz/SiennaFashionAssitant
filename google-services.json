@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "949911091838",
+    "project_id": "siennafashionassistantv1",
+    "storage_bucket": "siennafashionassistantv1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:949911091838:android:4a1aa1b9b3c24e2e61f62f",
+        "android_client_info": {
+          "package_name": "com.yourcompany.fashionassistant"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjFPTZ_xiOtNxw-Ny3MZhkbrJqfoMbvNw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

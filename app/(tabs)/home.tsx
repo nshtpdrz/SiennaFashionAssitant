@@ -3,9 +3,10 @@ import { router } from 'expo-router';
 import React from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function HomeScreen() {
-  const userData = { name: 'Ana García' };
+  const { user, userData } = useAuth();
 
   const getInitials = (name: string) => {
     return name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
@@ -16,12 +17,16 @@ export default function HomeScreen() {
       {/* Header COMPACTO pero con todas las funciones */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Text style={styles.greeting}>¡Hola, {userData.name}! 👋</Text>
+          <Text style={styles.greeting}>
+            ¡Hola, {userData?.name || user?.email || 'Usuario'}! 👋
+          </Text>
           <Text style={styles.subtitle}>¿Qué outfit llevarás hoy?</Text>
         </View>
         <TouchableOpacity onPress={() => router.push('/profile')}>
           <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>{getInitials(userData.name)}</Text>
+            <Text style={styles.avatarText}>
+              {getInitials(userData?.name || user?.email || 'US')}
+            </Text>
           </View>
         </TouchableOpacity>
       </View>

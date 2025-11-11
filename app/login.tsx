@@ -2,11 +2,13 @@
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('demo@fashion.com');
-  const [password, setPassword] = useState('123456');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { signIn } = useAuth();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -14,18 +16,43 @@ export default function LoginScreen() {
       return;
     }
 
+    if (!email.includes('@')) {
+      Alert.alert('Error', 'Por favor ingresa un email válido');
+      return;
+    }
+
     setLoading(true);
     
-    // Simular proceso de login
-    setTimeout(() => {
-      if (email === 'demo@fashion.com' && password === '123456') {
-        Alert.alert('Éxito', 'Inicio de sesión exitoso');
-        router.replace('/home');
-      } else {
-        Alert.alert('Error', 'Email o contraseña incorrectos');
+    try {
+      await signIn(email, password);
+      router.replace('/home');
+    } catch (error: any) {
+      let message = 'Error al iniciar sesión';
+      
+      switch (error.code) {
+        case 'auth/invalid-email':
+          message = 'Email inválido';
+          break;
+        case 'auth/user-not-found':
+          message = 'Usuario no encontrado';
+          break;
+        case 'auth/wrong-password':
+          message = 'Contraseña incorrecta';
+          break;
+        case 'auth/too-many-requests':
+          message = 'Demasiados intentos. Intenta más tarde';
+          break;
+        case 'auth/invalid-credential':
+          message = 'Credenciales incorrectas';
+          break;
+        default:
+          message = error.message || 'Error desconocido';
       }
+      
+      Alert.alert('Error', message);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -33,8 +60,8 @@ export default function LoginScreen() {
       <Text style={styles.title}>Iniciar Sesión</Text>
       
       <View style={styles.demoBanner}>
-        <Text style={styles.demoText}>🔧 Modo Demo Activado</Text>
-        <Text style={styles.demoSubtext}>Usa: demo@fashion.com / 123456</Text>
+        <Text style={styles.demoText}>🔧 Modo Demo - Usa cualquier email válido</Text>
+        <Text style={styles.demoSubtext}>La contraseña debe tener al menos 6 caracteres</Text>
       </View>
       
       <TextInput
@@ -44,6 +71,7 @@ export default function LoginScreen() {
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
+        autoComplete="email"
       />
       
       <TextInput
@@ -52,6 +80,7 @@ export default function LoginScreen() {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        autoComplete="password"
       />
 
       <TouchableOpacity 
@@ -108,6 +137,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 15,
     fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
   button: {
     backgroundColor: '#000',

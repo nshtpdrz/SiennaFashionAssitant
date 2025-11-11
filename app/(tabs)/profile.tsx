@@ -1,12 +1,39 @@
 // app/profile.tsx
 import { router } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../../contexts/AuthContext';
+import { outfitsService } from '../../services/outfitsService';
+import { wardrobeService } from '../../services/wardrobeService';
 
 export default function ProfileScreen() {
-  const userData = { name: 'Ana García', email: 'ana@fashion.com', age: '25', bio: 'Amante de la moda casual', style: 'Casual' };
-  const stats = [ { number: '42', label: 'Prendas' }, { number: '18', label: 'Outfits' }, { number: '7', label: 'Favoritos' } ];
+  const { user, userData, logout } = useAuth();
+  const [stats, setStats] = useState([ 
+    { number: '0', label: 'Prendas' }, 
+    { number: '0', label: 'Outfits' }, 
+    { number: '0', label: 'Favoritos' } 
+  ]);
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    try {
+      const clothingItems = await wardrobeService.getClothingItems();
+      const outfits = await outfitsService.getOutfits();
+      const favorites = clothingItems.filter(item => item.isFavorite);
+
+      setStats([
+        { number: clothingItems.length.toString(), label: 'Prendas' },
+        { number: outfits.length.toString(), label: 'Outfits' },
+        { number: favorites.length.toString(), label: 'Favoritos' }
+      ]);
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    }
+  };
 
   const getInitials = (name: string) => {
     return name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
@@ -15,7 +42,7 @@ export default function ProfileScreen() {
   const handleLogout = () => {
     Alert.alert('Cerrar Sesión', '¿Estás seguro?', [
       { text: 'Cancelar', style: 'cancel' },
-      { text: 'Cerrar Sesión', style: 'destructive', onPress: () => router.replace('/') }
+      { text: 'Cerrar Sesión', style: 'destructive', onPress: () => logout() }
     ]);
   };
 
@@ -31,12 +58,14 @@ export default function ProfileScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.userInfo}>
           <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>{getInitials(userData.name)}</Text>
+            <Text style={styles.avatarText}>
+              {getInitials(userData?.name || user?.email || 'Usuario')}
+            </Text>
           </View>
           <View style={styles.userDetails}>
-            <Text style={styles.userName}>{userData.name}</Text>
-            <Text style={styles.userEmail}>{userData.email}</Text>
-            <Text style={styles.userBio}>{userData.bio}</Text>
+            <Text style={styles.userName}>{userData?.name || user?.email}</Text>
+            <Text style={styles.userEmail}>{user?.email}</Text>
+            <Text style={styles.userBio}>{userData?.bio || 'Sin descripción'}</Text>
           </View>
         </View>
 

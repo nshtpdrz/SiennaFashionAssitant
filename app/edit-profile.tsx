@@ -3,25 +3,28 @@ import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Alert,
-    Image,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  Image,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
+import { useAuth } from '../contexts/AuthContext';
+import { storageService } from '../services/storageService';
 
 export default function EditProfileScreen() {
-  // Datos del usuario (iniciales)
-  const [userData, setUserData] = useState({
-    name: 'Ana García',
-    email: 'ana@fashion.com',
-    age: '25',
-    bio: 'Amante de la moda casual y sostenible 🍃',
-    style: 'Casual'
+  const { user, userData, updateUserData } = useAuth();
+  
+  const [localUserData, setLocalUserData] = useState({
+    name: userData?.name || '',
+    email: user?.email || '',
+    age: userData?.age || '',
+    bio: userData?.bio || '',
+    style: userData?.style || 'Casual'
   });
 
   const [profileImage, setProfileImage] = useState('https://via.placeholder.com/150x150');
@@ -48,7 +51,16 @@ export default function EditProfileScreen() {
     });
 
     if (!result.canceled) {
-      setProfileImage(result.assets[0].uri);
+      try {
+        setLoading(true);
+        // Subir imagen a Firebase Storage
+        const downloadURL = await storageService.uploadProfileImage(result.assets[0].uri);
+        setProfileImage(downloadURL);
+      } catch (error) {
+        Alert.alert('Error', 'No se pudo subir la imagen');
+      } finally {
+        setLoading(false);
+      }
     }
     setImageModal(false);
   };
@@ -69,26 +81,41 @@ export default function EditProfileScreen() {
     });
 
     if (!result.canceled) {
-      setProfileImage(result.assets[0].uri);
+      try {
+        setLoading(true);
+        // Subir imagen a Firebase Storage
+        const downloadURL = await storageService.uploadProfileImage(result.assets[0].uri);
+        setProfileImage(downloadURL);
+      } catch (error) {
+        Alert.alert('Error', 'No se pudo subir la imagen');
+      } finally {
+        setLoading(false);
+      }
     }
     setImageModal(false);
   };
 
   // Guardar cambios
   const saveProfile = async () => {
-    if (!userData.name.trim()) {
+    if (!localUserData.name.trim()) {
       Alert.alert('Error', 'El nombre es obligatorio');
       return;
     }
 
     setLoading(true);
     
-    // Simular guardado
-    setTimeout(() => {
+    try {
+      await updateUserData({
+        ...localUserData,
+        profileImage: profileImage !== 'https://via.placeholder.com/150x150' ? profileImage : null
+      });
       Alert.alert('Éxito', 'Perfil actualizado correctamente');
-      setLoading(false);
       router.back();
-    }, 1500);
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo actualizar el perfil');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -126,8 +153,8 @@ export default function EditProfileScreen() {
             <Text style={styles.label}>Nombre completo</Text>
             <TextInput
               style={styles.input}
-              value={userData.name}
-              onChangeText={(text) => setUserData({...userData, name: text})}
+              value={localUserData.name}
+              onChangeText={(text) => setLocalUserData({...localUserData, name: text})}
               placeholder="Tu nombre"
             />
           </View>
@@ -136,7 +163,7 @@ export default function EditProfileScreen() {
             <Text style={styles.label}>Email</Text>
             <TextInput
               style={[styles.input, styles.disabledInput]}
-              value={userData.email}
+              value={localUserData.email}
               editable={false}
               placeholder="Tu email"
             />
@@ -147,8 +174,8 @@ export default function EditProfileScreen() {
             <Text style={styles.label}>Edad</Text>
             <TextInput
               style={styles.input}
-              value={userData.age}
-              onChangeText={(text) => setUserData({...userData, age: text})}
+              value={localUserData.age}
+              onChangeText={(text) => setLocalUserData({...localUserData, age: text})}
               placeholder="Tu edad"
               keyboardType="numeric"
             />
@@ -160,8 +187,8 @@ export default function EditProfileScreen() {
           <Text style={styles.sectionTitle}>Sobre mí</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
-            value={userData.bio}
-            onChangeText={(text) => setUserData({...userData, bio: text})}
+            value={localUserData.bio}
+            onChangeText={(text) => setLocalUserData({...localUserData, bio: text})}
             placeholder="Cuéntanos sobre tu estilo..."
             multiline
             numberOfLines={3}
@@ -178,13 +205,13 @@ export default function EditProfileScreen() {
                 key={style}
                 style={[
                   styles.styleOption,
-                  userData.style === style && styles.styleOptionSelected
+                  localUserData.style === style && styles.styleOptionSelected
                 ]}
-                onPress={() => setUserData({...userData, style})}
+                onPress={() => setLocalUserData({...localUserData, style})}
               >
                 <Text style={[
                   styles.styleText,
-                  userData.style === style && styles.styleTextSelected
+                  localUserData.style === style && styles.styleTextSelected
                 ]}>
                   {style}
                 </Text>
